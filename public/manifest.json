@@ -1,0 +1,16 @@
+{
+  "name": "SIMTAB - Sistem Informasi Tabungan Siswa",
+  "short_name": "SIMTAB",
+  "description": "Sistem Informasi Tabungan Siswa SDN 1 Loloan Timur - Pencatatan setoran, penarikan, rekap otomatis, juara menabung, dan export Excel.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

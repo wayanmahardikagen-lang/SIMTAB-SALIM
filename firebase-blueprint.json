@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account and profile within SIMTAB",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["ADMIN", "PETUGAS", "KEPALA_SEKOLAH"] },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastLogin": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student savings account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nis": { "type": "string" },
+        "nisn": { "type": "string" },
+        "name": { "type": "string" },
+        "class": { "type": "string" },
+        "gender": { "type": "string", "enum": ["L", "P"] },
+        "parentName": { "type": "string" },
+        "parentPhone": { "type": "string" },
+        "status": { "type": "string", "enum": ["Aktif", "Lulus", "Pindah"] },
+        "balance": { "type": "number" },
+        "initialDepositDate": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "qrCodeData": { "type": "string" }
+      },
+      "required": ["id", "nis", "name", "class", "gender", "status", "balance"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Immutable savings deposit or withdrawal ledger entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "class": { "type": "string" },
+        "type": { "type": "string", "enum": ["SETORAN", "PENARIKAN"] },
+        "amount": { "type": "number" },
+        "date": { "type": "string" },
+        "previousBalance": { "type": "number" },
+        "newBalance": { "type": "number" },
+        "description": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdById": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "status": { "type": "string", "enum": ["VALID", "VOID", "DIKOREKSI"] },
+        "academicYear": { "type": "string" },
+        "batchId": { "type": "string" },
+        "originalTransactionId": { "type": "string" },
+        "correctionTransactionId": { "type": "string" },
+        "correctionReason": { "type": "string" },
+        "correctedBy": { "type": "string" },
+        "correctedAt": { "type": "string" }
+      },
+      "required": ["id", "studentId", "type", "amount", "date", "previousBalance", "newBalance", "status"]
+    },
+    "SchoolSettings": {
+      "title": "SchoolSettings",
+      "description": "Official school configuration and institutional parameters",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string" },
+        "npsn": { "type": "string" },
+        "address": { "type": "string" },
+        "village": { "type": "string" },
+        "district": { "type": "string" },
+        "regency": { "type": "string" },
+        "province": { "type": "string" },
+        "headmasterName": { "type": "string" },
+        "headmasterNip": { "type": "string" },
+        "treasurerName": { "type": "string" },
+        "treasurerNip": { "type": "string" },
+        "activeAcademicYear": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "minSavingsAmount": { "type": "number" },
+        "lowBalanceThreshold": { "type": "number" }
+      },
+      "required": ["schoolName", "npsn", "address", "headmasterName", "activeAcademicYear"]
+    },
+    "AcademicYear": {
+      "title": "AcademicYear",
+      "description": "School academic year period",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "name", "isActive"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System security and transactional audit record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "role": { "type": "string" },
+        "action": { "type": "string" },
+        "targetId": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "userName", "action", "details"]
+    },
+    "DistributionRecord": {
+      "title": "DistributionRecord",
+      "description": "Year-end savings distribution record for students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "class": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "amountDistributed": { "type": "number" },
+        "distributedDate": { "type": "string" },
+        "distributedBy": { "type": "string" },
+        "status": { "type": "string", "enum": ["Belum Dibagikan", "Sudah Dibagikan"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "studentId", "amountDistributed", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles and assigned roles"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Collection of enrolled students and their savings balances"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Immutable ledger of all deposit and withdrawal transactions"
+    },
+    "/settings/main": {
+      "schema": "SchoolSettings",
+      "description": "Main document containing school identity and parameters"
+    },
+    "/academic_years/{yearId}": {
+      "schema": "AcademicYear",
+      "description": "List of academic school years"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Audit trail log of all critical activities"
+    },
+    "/distribution_records/{recordId}": {
+      "schema": "DistributionRecord",
+      "description": "Distribution tracking for year-end student funds"
+    }
+  }
+}

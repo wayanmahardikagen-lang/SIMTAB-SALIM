@@ -1,0 +1,6 @@
+{
+  "name": "SIMTAB SDN 1 Loloan Timur",
+  "description": "Sistem Informasi Tabungan Siswa SDN 1 Loloan Timur - Pencatatan setoran, penarikan, rekap otomatis, juara menabung, dan export Excel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

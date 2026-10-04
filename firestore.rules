@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() && request.auth.token.email == "wayanmahardikagen@gmail.com";
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        isBootstrappedAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         getUserRole() == "ADMIN")
+      );
+    }
+
+    function isPetugas() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserRole() == "PETUGAS"
+      );
+    }
+
+    function isKepalaSekolah() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserRole() == "KEPALA_SEKOLAH"
+      );
+    }
+
+    function canManageTransactions() {
+      return isAdmin() || isPetugas();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (
+        request.auth.uid == userId || isAdmin()
+      );
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == userId && !incoming().diff(existing()).affectedKeys().hasAny(['role', 'status']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Students collection
+    match /students/{studentId} {
+      allow read: if isSignedIn();
+      allow create, update: if canManageTransactions();
+      allow delete: if isAdmin();
+    }
+
+    // Transactions collection (Immutable Ledger)
+    match /transactions/{transactionId} {
+      allow read: if isSignedIn();
+      allow create: if canManageTransactions();
+      // Only Admin can mark transaction as VOID or DIKOREKSI (never delete)
+      allow update: if isAdmin() && (
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'status', 'correctionReason', 'correctedBy', 'correctedAt', 'correctionTransactionId'
+        ])
+      );
+      allow delete: if false; // Financial audit records must never be hard-deleted
+    }
+
+    // Settings collection
+    match /settings/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Academic Years collection
+    match /academic_years/{yearId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Audit Logs collection (Append-only)
+    match /audit_logs/{logId} {
+      allow read: if isAdmin() || isKepalaSekolah();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Audit logs are tamper-proof and immutable
+    }
+
+    // Distribution Records collection
+    match /distribution_records/{recordId} {
+      allow read: if isSignedIn();
+      allow write: if canManageTransactions();
+    }
+
+    // Connection testing endpoint
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
